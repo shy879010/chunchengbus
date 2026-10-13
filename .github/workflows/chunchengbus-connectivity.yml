@@ -1,0 +1,68 @@
+name: chunchengbus cloud connectivity test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-public-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check Changchun Bus API from free GitHub-hosted runner
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import socket
+          import sys
+          import time
+          import urllib.request
+
+          host = "ccx.ccgjbus.com"
+          port = 20000
+          checks = [
+              ("line list", f"https://{host}:{port}/waitbus/public/line/list"),
+              ("G10 static info", f"https://{host}:{port}/waitbus/public/line/static/info?lineNo=10"),
+          ]
+
+          print("Testing from GitHub-hosted runner (no QuickFox, no APK, no token)", flush=True)
+          try:
+              addresses = sorted({item[4][0] for item in socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)})
+              print("DNS:", ", ".join(addresses), flush=True)
+          except Exception as exc:
+              print(f"DNS FAILED: {type(exc).__name__}: {exc}", flush=True)
+              sys.exit(1)
+
+          failed = 0
+          for label, url in checks:
+              print(f"Testing {label} ...", flush=True)
+              started = time.monotonic()
+              try:
+                  request = urllib.request.Request(url, headers={"User-Agent": "BusXing/Android", "Accept": "application/json"})
+                  with urllib.request.urlopen(request, timeout=25) as response:
+                      status = response.status
+                      data = json.loads(response.read(2_000_000).decode("utf-8-sig"))
+                  if status != 200 or not isinstance(data, list):
+                      raise ValueError(f"Unexpected response (HTTP {status}, JSON type {type(data).__name__})")
+                  if label == "line list":
+                      total = sum(len(category.get("lines", [])) for category in data if isinstance(category, dict))
+                      if total < 100:
+                          raise ValueError(f"Suspiciously short line list ({total})")
+                      detail = f"{total} routes"
+                  else:
+                      total_stations = sum(len(direction.get("stationList", [])) for direction in data if isinstance(direction, dict))
+                      if total_stations < 5:
+                          raise ValueError(f"Suspiciously short station detail ({total_stations})")
+                      detail = f"{total_stations} station records"
+                  print(f"PASS: {label}: HTTP {status}, {detail}, {time.monotonic() - started:.1f}s", flush=True)
+              except Exception as exc:
+                  failed += 1
+                  print(f"FAIL: {label}: {type(exc).__name__}: {exc}", flush=True)
+          if failed:
+              print(f"RESULT: FAILED ({failed} of {len(checks)} checks). Free GitHub cloud is not verified for live monitoring.")
+              sys.exit(1)
+          print("RESULT: PASS. GitHub free cloud can reach both anonymous Changchun Bus APIs.")
+          PY
