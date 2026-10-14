@@ -1,8 +1,1 @@
-{
-  "schema": 1,
-  "source": "chunchengbus",
-  "last_collected_at": "2026-10-13T21:00:48+00:00",
-  "lines_now": 235,
-  "details_read": 234,
-  "events": []
-}
+{"details_read":234,"events":[],"last_collected_at":"2026-10-14T21:49:33+00:00","lines_now":235,"schema":1,"source":"chunchengbus"}
