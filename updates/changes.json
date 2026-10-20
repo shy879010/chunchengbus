@@ -1,1 +1,1 @@
-{"details_read":234,"events":[],"last_collected_at":"2026-10-19T21:00:15+00:00","lines_now":235,"schema":1,"source":"chunchengbus"}
+{"details_read":234,"events":[{"captured_at":"2026-10-20T21:00:11+00:00","changes":["T30路（30，方向 0）删除站点：长春西站（ID 17530）","T30路（30，方向 0）新增站点：长春西站（ID 28377）","T30路（30，方向 1）删除站点：长春西站（ID 15362）","T30路（30，方向 1）新增站点：长春西站（ID 28379）"],"details_read":234,"id":"725236dd09b0e91fca2a1eed","lines_before":235,"lines_now":235}],"last_collected_at":"2026-10-20T21:00:11+00:00","lines_now":235,"schema":1,"source":"chunchengbus"}
